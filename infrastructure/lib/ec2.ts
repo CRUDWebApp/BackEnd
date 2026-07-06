@@ -1,11 +1,11 @@
 import * as cdk from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import * as fs from 'fs'
 import { Construct } from 'constructs';
 
 export interface EC2ConstructProps {
     vpc: ec2.Vpc,
 }
-
 
 export class EC2Construct extends Construct {
     public readonly instance: ec2.Instance;
@@ -27,9 +27,9 @@ export class EC2Construct extends Construct {
             'Allow SSH'
         );
 
-        const keypair = new ec2.KeyPair(this, 'KeyPair', {
-            type: ec2.KeyPairType.ED25519,
-            format: ec2.KeyPairFormat.PEM
+        const keypair = new ec2.CfnKeyPair(this, 'KeyPair', {
+            keyName: 'ec2-key',
+            publicKeyMaterial: fs.readFileSync('ec2-key.pub','utf-8')
         })
 
         //EC2 instane
@@ -42,16 +42,12 @@ export class EC2Construct extends Construct {
                 subnetType: ec2.SubnetType.PUBLIC
             },
             securityGroup: SecurityGroup,
-            keyPair: keypair
+            keyName: keypair.keyName!
         });
 
         new cdk.CfnOutput(this, 'EC2PublicIP', {
             value: this.instance.instancePublicIp,
             exportName: 'ec2-public-ip'
-        })
-
-        new cdk.CfnOutput(this, 'EC2PrivateKey', {
-            value: keypair.keyPairId
         })
     }
 }
