@@ -1,0 +1,19 @@
+import * as cdk from "aws-cdk-lib";
+import * as ecr from "aws-cdk-lib/aws-ecr";
+import { Construct } from "constructs";
+
+export class ECRConstruct extends Construct {
+    public readonly repository: ecr.Repository;
+
+    constructor(scope: Construct, id: string) {
+        super(scope,id);
+        this.repository = new ecr.Repository(this, 'BackendRepository',{
+            repositoryName: 'backendrepository',
+            removalPolicy: cdk.RemovalPolicy.DESTROY,
+            emptyOnDelete: true
+        });
+        new cdk.CfnOutput(this, 'ECRRepositoryUri', {
+            value: this.repository.registryUri
+        });
+    }
+}
