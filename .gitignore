@@ -1,0 +1,23 @@
+# Dependency directories
+webapp/backend/node_modules/
+webapp/backend/.pnpm-store/
+
+# Build outputs
+webapp/backend/dist/
+webapp/backend/build/
+
+# Environment variables
+webapp/backend/.env
+webapp/backend/.env.local
+
+# Logs
+webapp/backend/npm-debug.log*
+webapp/backend/yarn-debug.log*
+webapp/backend/yarn-error.log*
+webapp/backend/pnpm-debug.log*
+
+infrastructure/
+
+# System files
+webapp/backend/.DS_Store
+webapp/backend/pnpm-lock.yaml
