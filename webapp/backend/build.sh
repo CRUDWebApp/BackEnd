@@ -11,7 +11,7 @@ Region=$(jq -r '
 REPO_NAME=$(jq -r '
 .ECRStack
 | to_entries[]
-| select(.key | test("ECRtestECRRepositoryName"))
+| select(.key | test("ECRRepositoryName"))
 | .value
 ' ../../infrastructure/outputs.json)
 
