@@ -1,5 +1,33 @@
-#curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC='--disable traefik' sh -
-# ssh ec2-user@44.211.56.78 -i ../../infrastructure/ec2-key
+
+# ssh ec2-user@<ip> -i ../../infrastructure/ec2-key
+
+# sudo mkdir -p /etc/rancher/k3s
+# sudo nano /etc/rancher/k3s/config.yaml
+
+# tls-san:
+#   - <ip>
+
+# curl -sfL https://get.k3s.io | \
+# INSTALL_K3S_EXEC="\
+# --tls-san 44.211.56.78 \
+# --disable traefik" \
+# sh -
+
+# or
+
+# aws ssm send-command \
+#   --instance-ids i-xxxxxxxx \
+#   --document-name "AWS-RunShellScript" \
+#   --parameters commands='[
+#     "curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC=\"--tls-san 44.211.56.78 --disable traefik\" sh -"
+#   ]'
+
+# sudo openssl x509 \
+# -in /var/lib/rancher/k3s/server/tls/serving-kube-apiserver.crt \
+# -text \
+# -noout | grep -A1 "Subject Alternative Name"
+
+# sudo cat /etc/rancher/k3s/k3s.yaml
 #!/bin/bash
 ImageName="hello-world-api"
 
