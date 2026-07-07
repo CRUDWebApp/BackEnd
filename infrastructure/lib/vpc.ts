@@ -14,7 +14,6 @@ export class VPCConstruct extends Construct {
         this.vpc = new ec2.Vpc(this, 'WebApp_VPC', {
             vpcName: props.VPCName,
             ipAddresses: ec2.IpAddresses.cidr('10.0.0.0/16'),
-            natGateways: 1,
             maxAzs: 2,
             subnetConfiguration: [
                 {

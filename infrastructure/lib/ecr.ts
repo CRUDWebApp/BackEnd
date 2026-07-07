@@ -13,7 +13,15 @@ export class ECRConstruct extends Construct {
             emptyOnDelete: true
         });
         new cdk.CfnOutput(this, 'ECRRepositoryUri', {
-            value: this.repository.registryUri
+            value: this.repository.registryUri,
+            exportName: "ECRRepositoryUri"
         });
+        new cdk.CfnOutput(this, 'ECRRepositoryName', {
+            value: this.repository.repositoryName,
+            exportName: 'ECRRepositoryName',
+        });
+        new cdk.CfnOutput(this, "ECRRegion", {
+            value: cdk.Stack.of(this).region
+        })
     }
 }
