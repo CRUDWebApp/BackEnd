@@ -17,6 +17,11 @@ export class WebAppStack extends cdk.Stack {
             vpc: vpc_test.vpc,
         });
         
+    }
+}
+export class ECRStack extends cdk.Stack {
+    constructor(scope: Construct, id: string, props?: cdk.StackProps){
+        super(scope, id, props);
         new ECRConstruct(this, 'ECR-test');
     }
 }
