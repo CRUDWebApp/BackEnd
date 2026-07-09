@@ -17,7 +17,7 @@ export default function Home() {
         },
         body: JSON.stringify({
           name: 'khoi',
-          age: 21
+          email: '23520764@gm.uit.edu.vn'
         })
       })
 

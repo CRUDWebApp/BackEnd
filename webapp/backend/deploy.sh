@@ -52,17 +52,63 @@ REPO_URI=$(jq -r '
 | .value
 ' ../../infrastructure/outputs.json)
 
+SECRET_NAME=$(jq -r '
+.RDSStack
+| to_entries[]
+| select(.key | test("RDSDatabaseSecretArn"))
+| .value
+' ../../infrastructure/outputs.json)
+
+SECRET=$(aws secretsmanager get-secret-value \
+  --secret-id "$SECRET_NAME" \
+  --query SecretString \
+  --output text \
+  --secret-id "$SECRET_NAME")
+
 # In PC
 IMAGE="$REPO_URI/$REPO_NAME:$ImageName"
 export KUBECONFIG=~/.kube/ec2.yaml
+
 kubectl get nodes
 
-PASSWORD=$(aws ecr get-login-password --region $Region)
+SECRET_JSON=$(aws secretsmanager get-secret-value \
+    --secret-id "$SECRET_NAME" \
+    --query SecretString \
+    --output text)
+
+HOST=$(echo "$SECRET_JSON" | jq -r '.host')
+PORT=$(echo "$SECRET_JSON" | jq -r '.port')
+DB=$(echo "$SECRET_JSON" | jq -r '.dbname')
+USER=$(echo "$SECRET_JSON" | jq -r '.username')
+PASS=$(echo "$SECRET_JSON" | jq -r '.password')
+
+DATABASE_URL="postgresql://${USER}:${PASS}@${HOST}:${PORT}/${DB}"
+
+PASSWORD=$(aws ecr get-login-password --region "$Region")
+
 kubectl create secret docker-registry ecr-secret \
-    --docker-server=$REPO_URI \
-    --docker-username=AWS \
-    --docker-password="$PASSWORD"
+  --docker-server="$REPO_URI" \
+  --docker-username=AWS \
+  --docker-password="$PASSWORD" \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+kubectl create secret generic backend-secret \
+  --from-literal=DATABASE_URL="$DATABASE_URL" \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+kubectl delete job prisma-migrate --ignore-not-found
+kubectl wait --for=delete job/prisma-migrate --timeout=60s || true
+
+sed "s|{{image}}|$IMAGE|g" k8s/migration.yaml | kubectl apply -f -
+
+kubectl wait \
+    --for=condition=complete \
+    job/prisma-migrate \
+    --timeout=300s
 
 sed "s|{{image}}|$IMAGE|g" k8s/deployment.yaml | kubectl apply -f -
 
-kubectl rollout restart deployment hello-world-api
+kubectl apply -f k8s/service.yaml
+
+kubectl rollout status deployment/hello-world-api
+

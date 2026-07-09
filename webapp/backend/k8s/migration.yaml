@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: Job
+
+metadata:
+  name: prisma-migrate
+
+spec:
+
+  backoffLimit: 3
+
+  template:
+
+    spec:
+
+      restartPolicy: Never
+
+      imagePullSecrets:
+        - name: ecr-secret
+
+      containers:
+
+        - name: migrate
+
+          image: {{image}}
+
+          imagePullPolicy: Always
+
+          command:
+            - pnpm
+            - prisma
+            - db
+            - push
+
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: DATABASE_URL
