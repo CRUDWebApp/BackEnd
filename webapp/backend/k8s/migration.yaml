@@ -28,8 +28,8 @@ spec:
           command:
             - pnpm
             - prisma
-            - migrate
-            - deploy
+            - db
+            - push
 
           env:
             - name: DATABASE_URL

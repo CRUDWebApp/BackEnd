@@ -39,19 +39,24 @@ export default function Home() {
       setMessage(`Error: ${error}`)
     }
   };
-
+  const [deleteId, setDeleteId] = useState("");
   const handleDelete = async () => {
-    try {
-      const response = await fetch(`${API_URL}/delete/1`, {
-        method: 'DELETE'
-      })
+  if (!deleteId) {
+    setMessage("Please enter an ID.");
+    return;
+  }
 
-      const data = await response.json();
-      setMessage(JSON.stringify(data, null, 2));
-    } catch (error) {
-      setMessage(`Error: ${error}`)
-    }
-  };
+  try {
+    const response = await fetch(`${API_URL}/delete/${deleteId}`, {
+      method: "DELETE",
+    });
+
+    const data = await response.json();
+    setMessage(JSON.stringify(data, null, 2));
+  } catch (error) {
+    setMessage(`Error: ${error}`);
+  }
+};
 
   return (
     <div
@@ -75,10 +80,25 @@ export default function Home() {
         onClick={handleGet}
       />
 
+      <input
+        type="number"
+        placeholder="Enter user ID"
+        value={deleteId}
+        onChange={(e) => setDeleteId(e.target.value)}
+        style={{
+          width: "200px",
+          padding: "8px",
+          borderRadius: "6px",
+          border: "1px solid #ccc",
+        }}
+      />
+
       <Button
         text="Delete"
         onClick={handleDelete}
       />
+
+
 
       <div style={{ width: "500px" }}>
         <strong>Response</strong>

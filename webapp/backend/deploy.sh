@@ -69,9 +69,6 @@ SECRET=$(aws secretsmanager get-secret-value \
 
 # In PC
 IMAGE="$REPO_URI/$REPO_NAME:$ImageName"
-export KUBECONFIG=~/.kube/ec2.yaml
-
-kubectl get nodes
 
 SECRET_JSON=$(aws secretsmanager get-secret-value \
     --secret-id "$SECRET_NAME" \
@@ -84,7 +81,7 @@ DB=$(echo "$SECRET_JSON" | jq -r '.dbname')
 USER=$(echo "$SECRET_JSON" | jq -r '.username')
 PASS=$(echo "$SECRET_JSON" | jq -r '.password')
 
-DATABASE_URL="postgresql://${USER}:${PASS}@${HOST}:${PORT}/${DB}"
+DATABASE_URL="postgresql://${USER}:${PASS}@${HOST}:${PORT}/${DB}?schema=public"
 
 PASSWORD=$(aws ecr get-login-password --region "$Region")
 
