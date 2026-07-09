@@ -1,6 +1,8 @@
 
 # ssh ec2-user@<ip> -i ../../infrastructure/ec2-key
 
+#sudo kubectl exec -it deploy/hello-world-api -- sh
+
 # sudo mkdir -p /etc/rancher/k3s
 # sudo nano /etc/rancher/k3s/config.yaml
 
