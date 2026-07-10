@@ -68,6 +68,7 @@ SECRET=$(aws secretsmanager get-secret-value \
   --secret-id "$SECRET_NAME")
 
 # In PC
+export KUBECONFIG=~/.kube/ec2.yaml
 IMAGE="$REPO_URI/$REPO_NAME:$ImageName"
 
 SECRET_JSON=$(aws secretsmanager get-secret-value \
