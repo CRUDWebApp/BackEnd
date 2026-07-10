@@ -1,6 +1,6 @@
 import { response, Router } from "express"
 import type { Request, Response } from "express";
-import { timeStamp } from "node:console";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../prisma.js";
 
 const router: Router = Router();
@@ -24,10 +24,17 @@ router.post("/create", async (request: Request, response: Response ) => {
 
     } catch (error) {
 
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+            return response.status(409).json({
+                success: false,
+                message: "Email already exists",
+            });
+        }
+
         response.status(500).json({
             success: false,
             message: "Create failed",
-            error
+            error: error instanceof Error ? error.message : String(error),
         });
 
     }
