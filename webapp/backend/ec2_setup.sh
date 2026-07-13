@@ -6,14 +6,14 @@ OUTPUT_FILE="../../infrastructure/outputs.json"
 INSTANCE_ID=$(jq -r '
 .EC2Stack
 | to_entries[]
-| select(.key | test("EC2ID"))
+| select(.key | test("EC21ID"))
 | .value
 ' "$OUTPUT_FILE")
 
 INSTANCE_PUBLIC_IP=$(jq -r '
 .EC2Stack
 | to_entries[]
-| select(.key | test("EC2PublicIP"))
+| select(.key | test("EC21PublicIP"))
 | .value
 ' "$OUTPUT_FILE")
 
