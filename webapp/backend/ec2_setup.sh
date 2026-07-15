@@ -112,6 +112,13 @@ sed -i "s/127.0.0.1/$INSTANCE_PUBLIC_IP1/g" ~/.kube/ec2-1.yaml
 chmod 600 ~/.kube/ec2-1.yaml
 
 echo
+echo "===================================="
+echo "K3s installed successfully."
+echo "Kubeconfig: ~/.kube/ec2-1.yaml"
+echo
+echo "===================================="
+
+echo
 echo "=================================================================="
 echo "Instance ID 2: $INSTANCE_ID2"
 echo "Public IP 2: $INSTANCE_PUBLIC_IP2"
@@ -188,12 +195,14 @@ aws ssm get-command-invocation \
 sed -i "s/127.0.0.1/$INSTANCE_PUBLIC_IP2/g" ~/.kube/ec2-2.yaml
 
 chmod 600 ~/.kube/ec2-2.yaml
-
 echo
 echo "===================================="
 echo "K3s installed successfully."
-echo "Kubeconfig: ~/.kube/ec2-1.yaml"
+echo "Kubeconfig: ~/.kube/ec2-2.yaml"
+
+
 echo
+echo "===================================="
 echo "Test:"
 echo "export KUBECONFIG=~/.kube/ec2-1.yaml"
 echo "kubectl get nodes"
@@ -202,10 +211,6 @@ export KUBECONFIG=~/.kube/ec2-1.yaml
 kubectl get nodes
 echo "===================================="
 
-echo
-echo "===================================="
-echo "K3s installed successfully."
-echo "Kubeconfig: ~/.kube/ec2-1.yaml"
 echo
 echo "Test:"
 echo "export KUBECONFIG=~/.kube/ec2-2.yaml"
