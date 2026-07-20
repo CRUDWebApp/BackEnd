@@ -1,26 +1,26 @@
 #!/bin/bash
-ImageName="hello-world-api"
+ImageName="crud-app"
 
 Region=$(jq -r '
 .ECRStack
 | to_entries[]
 | select(.key | test("ECRRegion"))
 | .value
-' ../../infrastructure/outputs.json)
+' ./outputs.json)
 
 REPO_NAME=$(jq -r '
 .ECRStack
 | to_entries[]
 | select(.key | test("ECRRepositoryName"))
 | .value
-' ../../infrastructure/outputs.json)
+' ./outputs.json)
 
 REPO_URI=$(jq -r '
 .ECRStack
 | to_entries[]
 | select(.key | test("RepositoryUri"))
 | .value
-' ../../infrastructure/outputs.json)
+' ./outputs.json)
 
 if [ -z "$REPO_URI" ]; then
   echo "ECR repository URI not found"

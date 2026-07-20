@@ -2,17 +2,16 @@ apiVersion: v1
 kind: Service
 
 metadata:
-  name: hello-service
+  name: crud-app-service
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
 
 spec:
-
-  type: NodePort
-
+  type: LoadBalancer
   selector:
-    app: hello
+    app: crud-app
 
   ports:
 
-  - port: 3000
+  - port: 80
     targetPort: 3000
-    nodePort: 30080

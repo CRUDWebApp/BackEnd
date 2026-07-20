@@ -1,0 +1,97 @@
+name: Deploy to EKS
+
+on:
+  pull_request:
+    branches:
+      - main 
+      - develop
+
+  workflow_dispatch:
+
+jobs:
+  deploy-to-eks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+
+      - name: Fetch Outputs from CloudFormation
+        run: |
+          EKS_OUT=$(aws cloudformation describe-stacks --stack-name EKSStack --query "Stacks[0].Outputs" --output json)
+          CLUSTER_NAME=$(echo "$EKS_OUT" | jq -r '.[] | select(.OutputKey | contains("ClusterName")) | .OutputValue')
+          
+          RDS_OUT=$(aws cloudformation describe-stacks --stack-name RDSStack --query "Stacks[0].Outputs" --output json)
+          SECRET_NAME=$(echo "$RDS_OUT" | jq -r '.[] | select(.OutputKey | contains("RDSDatabaseSecretArn")) | .OutputValue')
+          
+          ECR_OUT=$(aws cloudformation describe-stacks --stack-name ECRStack --query "Stacks[0].Outputs" --output json)
+          REPO_URI=$(echo "$ECR_OUT" | jq -r '.[] | select(.OutputKey | contains("RepositoryUri")) | .OutputValue')
+          REPO_NAME=$(echo "$ECR_OUT" | jq -r '.[] | select(.OutputKey | contains("ECRRepositoryName")) | .OutputValue')
+          
+          echo "CLUSTER_NAME=$CLUSTER_NAME" >> $GITHUB_ENV
+          echo "SECRET_NAME=$SECRET_NAME" >> $GITHUB_ENV
+          
+          echo "IMAGE=$REPO_URI/$REPO_NAME:${{secrets.IMAGE_TAG}}" >> $GITHUB_ENV
+
+
+      - name: Connect to EKS and Create K8s Secret
+        run: |
+          echo "CONNECT TO EKS CLUSTER: ${{ env.CLUSTER_NAME }}"
+          aws eks update-kubeconfig --region us-east-1 --name ${{ env.CLUSTER_NAME }}
+          
+          echo "GET DATABASE INFORMATION & CREATE K8S SECRET"
+          SECRET_JSON=$(aws secretsmanager get-secret-value --secret-id ${{ env.SECRET_NAME }} --query SecretString --output text)
+
+          HOST=$(echo "$SECRET_JSON" | jq -r '.host')
+          PORT=$(echo "$SECRET_JSON" | jq -r '.port')
+          DB=$(echo "$SECRET_JSON" | jq -r '.dbname')
+          USER=$(echo "$SECRET_JSON" | jq -r '.username')
+          PASS=$(echo "$SECRET_JSON" | jq -r '.password')
+
+          DATABASE_URL="postgresql://${USER}:${PASS}@${HOST}:${PORT}/${DB}?schema=public"
+
+          kubectl create secret generic backend-secret \
+            --from-literal=DATABASE_URL="$DATABASE_URL" \
+            --dry-run=client -o yaml | kubectl apply -f -
+            
+          echo "✅ SET UP CLUSTER COMPLETELY!"
+
+
+      - name: Database Migration
+        run: |
+          echo "USING IMAGE: ${{ env.IMAGE }}"
+          
+          echo "DATABASE MIGRATION (PRISMA)"
+          kubectl delete job prisma-migrate --ignore-not-found
+          kubectl wait --for=delete job/prisma-migrate --timeout=60s || true
+
+          sed "s|{{image}}|${{ env.IMAGE }}|g" k8s/migration.yaml | kubectl apply -f -
+
+          echo "Waiting for migration to complete..."
+          kubectl wait --for=condition=complete job/prisma-migrate --timeout=300s
+          echo "Migration successfully!"
+
+          
+      - name: Deploy application
+        run: |
+          echo "DEPLOY APP & UPDATE LOAD BALANCER"
+          sed "s|{{image}}|${{ env.IMAGE }}|g" k8s/deployment.yaml | kubectl apply -f -
+          kubectl apply -f k8s/service.yaml
+
+          echo "Wating for pod starting.."
+          kubectl rollout status deployment/${{secrets.IMAGE_TAG}}
+
+          echo "=================================================================="
+          echo "✅ DEPLOY SUCCESSFULLY!"
+          echo "ALB URL:"
+          echo $(kubectl get svc crud-app-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          echo "=================================================================="

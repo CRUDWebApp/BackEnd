@@ -1,0 +1,29 @@
+{
+  "VPCStack": {
+    "VPCVPCAZ9398F278": "us-east-1a,us-east-1b",
+    "PublishOutputRefVPCWebAppVPCrdssubnetSubnet1SubnetD2F646D7FFB0D246": "subnet-0cab691d07f420993",
+    "VPCVPCPublicSubnetIds55BA463B": "subnet-0894f9d5c14a242cb,subnet-0aba6807965295306",
+    "PublishOutputRefVPCWebAppVPCekssubnetSubnet1Subnet20CE68EC9B0E23C7": "subnet-0894f9d5c14a242cb",
+    "PublishOutputRefVPCWebAppVPCC6483C4A0815ECD8": "vpc-049bb3c340812237a",
+    "PublishOutputRefVPCWebAppVPCrdssubnetSubnet2Subnet3512576DC64E7E81": "subnet-0ac29dc8cf37d23f3",
+    "VPCvpcId11FC5DA8": "vpc-049bb3c340812237a",
+    "VPCVPCPrivateSubnetIds6F33F182": "subnet-0cab691d07f420993,subnet-0ac29dc8cf37d23f3",
+    "PublishOutputRefVPCWebAppVPCekssubnetSubnet2Subnet0D43E6ACF5D1C964": "subnet-0aba6807965295306"
+  },
+  "ECRStack": {
+    "ECRECRRepositoryUri8FDC2E39": "675492141691.dkr.ecr.us-east-1.amazonaws.com",
+    "ECRECRRepositoryNameA21991A9": "backendrepository",
+    "ECRECRRegion0923CF0D": "us-east-1"
+  },
+  "EKSStack": {
+    "EKSStackEKSClusterName40EEE726": "EKSCluster",
+    "EKSStackEKSNodeGroupECEE47C5": "Nodegroup2",
+    "PublishOutputFnGetAttEKSStackEksClusterControlPlaneSecurityGroup8B04589FGroupId64687879": "sg-0c82d505ff53a6168",
+    "PublishOutputFnGetAttEKSStackEksClusterC2747860ClusterSecurityGroupIdEEE276B5": "sg-0c1d6f157fa64b800"
+  },
+  "RDSStack": {
+    "RDSDatabaseEndpoint1FA80DFB": "rdsstack-rdspostgresdatabase0fe53f5d-odwwqzterykc.cezse04equbg.us-east-1.rds.amazonaws.com",
+    "RDSDatabasePortAAB5B2F9": "5432",
+    "RDSDatabaseSecretArn4457360A": "arn:aws:secretsmanager:us-east-1:675492141691:secret:RDSDatabaseSecret966E1535-IeEsL1fzH4MC-ohTNnK"
+  }
+}

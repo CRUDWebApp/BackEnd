@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: hello-world-api
+  name: crud-app
 
 spec:
   replicas: 1
 
   selector:
     matchLabels:
-      app: hello
+      app: crud-app
 
   template:
     metadata:
       labels:
-        app: hello
+        app: crud-app
 
     spec:
 
