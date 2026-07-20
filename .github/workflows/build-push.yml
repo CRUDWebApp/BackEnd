@@ -20,7 +20,7 @@ jobs:
         with:
             version: 10
             cache: true
-            cache_dependency_path: ./infrastructure/pnpm-lock.yaml
+            cache_dependency_path: ./backend/pnpm-lock.yaml
 
       - name: Install dependencies
         working-directory: ./infrastructure
@@ -46,7 +46,7 @@ jobs:
           
           echo "REPO_URI=$REPO_URI" >> $GITHUB_ENV
           echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
-          echo "IMAGE_TAG= ${{secrets.IMAGE_TAG}} >> $GITHUB_ENV
+          echo "IMAGE_TAG=${{ secrets.IMAGE_TAG }}" >> $GITHUB_ENV
 
       - name: Login to Amazon ECR
         id: login-ecr
