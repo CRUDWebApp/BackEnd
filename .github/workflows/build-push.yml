@@ -23,7 +23,7 @@ jobs:
             cache_dependency_path: ./backend/pnpm-lock.yaml
 
       - name: Install dependencies
-        working-directory: ./infrastructure
+        working-directory: ./backend
         run: pnpm install --frozen-lockfile
 
       - name: Install dependencies and Build TS
