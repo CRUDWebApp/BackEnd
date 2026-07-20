@@ -95,5 +95,13 @@ jobs:
           echo "=================================================================="
           echo "✅ DEPLOY SUCCESSFULLY!"
           echo "ALB URL:"
-          echo $(kubectl get svc crud-app-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          for i in $(seq 1 12); do
+            URL=$(kubectl get svc crud-app-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+            if [ -n "$URL" ]; then
+              echo "$URL"
+              break
+            fi
+            echo "  waiting for Load Balancer... ($i/12)"
+            sleep 10
+          done
           echo "=================================================================="
