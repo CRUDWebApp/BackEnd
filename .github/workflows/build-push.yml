@@ -27,6 +27,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install dependencies and Build TS
+        working-directory: ./backend
         run: |
           pnpm run build
 
