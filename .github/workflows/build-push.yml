@@ -21,17 +21,19 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v6
         with:
-            version: 10
-            cache: true
-            cache_dependency_path: ./backend/pnpm-lock.yaml
+          version: 10
 
-      - name: Install dependencies
-        working-directory: ./backend
-        run: pnpm install --frozen-lockfile
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: ./backend/pnpm-lock.yaml
 
-      - name: Install dependencies and Build TS
+      - name: Install dependencies, Generate Prisma & Build TS
         working-directory: ./backend
         run: |
+          pnpm install --frozen-lockfile
           pnpm prisma generate
           pnpm run build
 
@@ -45,10 +47,10 @@ jobs:
       - name: Fetch ECR Outputs from CloudFormation
         run: |
           ECR_OUT=$(aws cloudformation describe-stacks --stack-name ECRStack --query "Stacks[0].Outputs" --output json)
-          
+
           REPO_URI=$(echo "$ECR_OUT" | jq -r '.[] | select(.OutputKey | contains("RepositoryUri")) | .OutputValue')
           REPO_NAME=$(echo "$ECR_OUT" | jq -r '.[] | select(.OutputKey | contains("ECRRepositoryName")) | .OutputValue')
-          
+
           echo "REPO_URI=$REPO_URI" >> $GITHUB_ENV
           echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
           echo "IMAGE_TAG=${{ secrets.IMAGE_TAG }}" >> $GITHUB_ENV
@@ -58,11 +60,10 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build and Tag Docker Image
-        working-directory: ./backend/
+        working-directory: ./backend
         run: |
           docker build -t ${{ env.REPO_URI }}/${{ env.REPO_NAME }}:${{ env.IMAGE_TAG }} .
 
       - name: Push Image to ECR
-        working-directory: ./backend/
         run: |
           docker push ${{ env.REPO_URI }}/${{ env.REPO_NAME }}:${{ env.IMAGE_TAG }}
