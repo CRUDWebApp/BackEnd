@@ -61,7 +61,7 @@ jobs:
 
           kubectl create secret generic backend-secret \
             --from-literal=DATABASE_URL="$DATABASE_URL" \
-            --dry-run=client -o yaml | kubectl apply -f -
+            --dry-run=client -o yaml | kubectl apply --validate=false -f -
             
           echo "✅ SET UP CLUSTER COMPLETELY!"
 
