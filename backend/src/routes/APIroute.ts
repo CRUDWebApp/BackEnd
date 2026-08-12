@@ -9,16 +9,38 @@ const router: Router = Router();
 router.post("/create", async (request: Request, response: Response) => {
     try {
         // Basic validation
-        const { studentid, name, email } = request.body;
-        if (!studentid || !name || !email) {
+        const { name, email } = request.body;
+        if (!name || !email) {
             return response.status(400).json({
                 success: false,
                 message: "Missing required fields: studentid, name, email"
             });
         }
 
-        const user = await prisma.user.create({
-            data: { studentid, name, email }
+        const currentyear = new Date().getFullYear.toString().slice(-2);
+
+
+        const user = await prisma.$transaction(async (tx) => {
+            
+            // Tìm user có ID (số thứ tự) lớn nhất hiện tại
+            const lastUser = await tx.user.findFirst({
+                orderBy: { id: 'desc' }
+            });
+
+            const nextId = (lastUser?.id || 0) + 1;
+
+            // 3. Ghép chuỗi tạo studentid. 
+            // Dùng padStart để luôn có 4 chữ số (VD: 260001, 260015, 261234)
+            const generatedStudentId = `${currentYearPrefix}${String(nextId).padStart(4, '0')}`;
+
+            // 4. Tạo user mới với studentid vừa tự sinh
+            return await tx.user.create({
+                data: { 
+                    studentid: generatedStudentId, 
+                    name, 
+                    email 
+                }
+            });
         });
 
         return response.status(201).json({
