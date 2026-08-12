@@ -1,7 +1,7 @@
 #!/bin/bash
 # set -euo pipefail
 
-OUTPUT_FILE="outputs.json"
+OUTPUT_FILE="./outputs.json"
 ImageName="crud-app"
 
 echo "=================================================================="

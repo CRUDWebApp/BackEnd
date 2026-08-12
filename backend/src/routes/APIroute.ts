@@ -8,9 +8,9 @@ const router: Router = Router();
 //POST-/api/create
 router.post("/create", async (request: Request, response: Response ) => {
     try {
-
         const user = await prisma.user.create({
             data: {
+                studentid:request.body.studentid,
                 name: request.body.name,
                 email: request.body.email
             }
@@ -27,7 +27,7 @@ router.post("/create", async (request: Request, response: Response ) => {
         if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
             return response.status(409).json({
                 success: false,
-                message: "Email already exists",
+                message: "Student's ID already exists",
             });
         }
 
@@ -53,13 +53,12 @@ router.get("/getinfor", async (request: Request, response: Response) => {
 });
 
 //DELETE-/api/delete/:id
-
-router.delete("/delete/:id", async (request: Request, response: Response) => {
+router.delete("/delete/:studentid", async (request: Request, response: Response) => {
 
     await prisma.user.delete({
 
         where: {
-            id: Number(request.params.id)
+            studentid: String(request.params.studentid)
         }
 
     });
@@ -69,5 +68,33 @@ router.delete("/delete/:id", async (request: Request, response: Response) => {
         message: "Delete successfully"
     });
 
+});
+
+//DELETE-/api/update/:studentid
+router.put("/update/:studentid", async (request: Request, response: Response) => {
+    try {
+        const user = await prisma.user.update({
+            where: {
+                studentid: String(request.params.studentid)
+            },
+            data: {
+                name: request.body.name,
+                email: request.body.email
+            }
+        });
+
+        response.json({
+            success: true,
+            message: "Update successfully",
+            data: user
+        });
+
+    } catch (error) {
+        response.status(500).json({
+            success: false,
+            message: "Update failed",
+            error: error instanceof Error ? error.message : String(error),
+        });
+    }
 });
 export default router

@@ -8,8 +8,9 @@ datasource db {
 }
 
 model User {
-    id        Int      @id @default(autoincrement())
+    id        Int       @id @default(autoincrement())
+    studentid String    @unique
     name      String
-    email     String   @unique
-    createdAt DateTime @default(now())
+    email     String 
+    createdAt DateTime  @default(now())
 }
