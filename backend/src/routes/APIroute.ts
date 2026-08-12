@@ -31,7 +31,7 @@ router.post("/create", async (request: Request, response: Response) => {
 
             // 3. Ghép chuỗi tạo studentid. 
             // Dùng padStart để luôn có 4 chữ số (VD: 260001, 260015, 261234)
-            const generatedStudentId = `${currentYearPrefix}${String(nextId).padStart(4, '0')}`;
+            const generatedStudentId = `${currentyear}${String(nextId).padStart(4, '0')}`;
 
             // 4. Tạo user mới với studentid vừa tự sinh
             return await tx.user.create({
