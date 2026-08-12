@@ -1,100 +1,128 @@
-import { response, Router } from "express"
+import { Router } from "express";
 import type { Request, Response } from "express";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../prisma.js";
 
 const router: Router = Router();
 
-//POST-/api/create
-router.post("/create", async (request: Request, response: Response ) => {
+// POST - /api/create
+router.post("/create", async (request: Request, response: Response) => {
     try {
+        // Basic validation
+        const { studentid, name, email } = request.body;
+        if (!studentid || !name || !email) {
+            return response.status(400).json({
+                success: false,
+                message: "Missing required fields: studentid, name, email"
+            });
+        }
+
         const user = await prisma.user.create({
-            data: {
-                studentid:request.body.studentid,
-                name: request.body.name,
-                email: request.body.email
-            }
+            data: { studentid, name, email }
         });
 
-        response.status(201).json({
+        return response.status(201).json({
             success: true,
             message: "Create successfully",
             data: user
         });
 
     } catch (error) {
-
         if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
             return response.status(409).json({
                 success: false,
-                message: "Student's ID already exists",
+                message: "Student's ID or Email already exists", // Đảm bảo email cũng không bị trùng nếu DB có set unique
             });
         }
 
-        response.status(500).json({
+        return response.status(500).json({
             success: false,
             message: "Create failed",
             error: error instanceof Error ? error.message : String(error),
         });
-
     }
 }); 
 
-//GET-/api/getinfor
+// GET - /api/getinfor
 router.get("/getinfor", async (request: Request, response: Response) => {
-
-    const users = await prisma.user.findMany();
-
-    response.json({
-        success: true,
-        data: users
-    });
-
+    try {
+        const users = await prisma.user.findMany();
+        return response.json({
+            success: true,
+            data: users
+        });
+    } catch (error) {
+        return response.status(500).json({
+            success: false,
+            message: "Failed to fetch users",
+            error: error instanceof Error ? error.message : String(error),
+        });
+    }
 });
 
-//DELETE-/api/delete/:id
+// DELETE - /api/delete/:studentid
 router.delete("/delete/:studentid", async (request: Request, response: Response) => {
+    try {
+        await prisma.user.delete({
+            where: {
+                studentid: String(request.params.studentid)
+            }
+        });
 
-    await prisma.user.delete({
-
-        where: {
-            studentid: String(request.params.studentid)
+        return response.json({
+            success: true,
+            message: "Delete successfully"
+        });
+    } catch (error) {
+        // P2025 là mã lỗi của Prisma khi không tìm thấy record để xoá
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
+            return response.status(404).json({
+                success: false,
+                message: "Student not found"
+            });
         }
 
-    });
-
-    response.json({
-        success: true,
-        message: "Delete successfully"
-    });
-
+        return response.status(500).json({
+            success: false,
+            message: "Delete failed",
+            error: error instanceof Error ? error.message : String(error),
+        });
+    }
 });
 
-//DELETE-/api/update/:studentid
+// PUT - /api/update/:studentid
 router.put("/update/:studentid", async (request: Request, response: Response) => {
     try {
+        const { name, email } = request.body;
+
         const user = await prisma.user.update({
             where: {
                 studentid: String(request.params.studentid)
             },
-            data: {
-                name: request.body.name,
-                email: request.body.email
-            }
+            data: { name, email }
         });
 
-        response.json({
+        return response.json({
             success: true,
             message: "Update successfully",
             data: user
         });
 
     } catch (error) {
-        response.status(500).json({
+        // Xử lý lỗi không tìm thấy user để update
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
+            return response.status(404).json({
+                success: false,
+                message: "Student not found"
+            });
+        }
+
+        return response.status(500).json({
             success: false,
             message: "Update failed",
             error: error instanceof Error ? error.message : String(error),
         });
     }
 });
-export default router
+
+export default router;
